@@ -114,13 +114,17 @@ function syncCallLog(options) {
   const response = makeRequest({ path, query });
   const documentProperties = PropertiesService.getDocumentProperties();
   documentProperties.setProperty('CALL_LOG_SYNC_INFO', JSON.stringify(response.syncInfo));
+  documentProperties.setProperty('CALL_LOG_SYNC_LEVEL', options.syncLevel);
   return response;
 }
 
 function getCallLogSyncInfo() {
   const documentProperties = PropertiesService.getDocumentProperties();
   const data = documentProperties.getProperty('CALL_LOG_SYNC_INFO');
-  return (data && JSON.parse(data)) || {};
+  const syncInfo = (data && JSON.parse(data)) || {};
+  const syncLevel = documentProperties.getProperty('CALL_LOG_SYNC_LEVEL') || 'extension';
+  syncInfo.syncLevel = syncLevel;
+  return syncInfo
 }
 
 function isRingCentralAdmin() {

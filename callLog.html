@@ -27,7 +27,7 @@
       <form id="callLogForm">
         <fieldset class="form-group">
           <div class="row">
-            <legend class="col-form-label col-3 pt-0">Fync Type</legend>
+            <legend class="col-form-label col-3 pt-0">Sync Type</legend>
             <div class="row col-9 radioGroup" id="syncTypeGroup">
               <div class="form-check col-5">
                 <input class="form-check-input" type="radio" name="syncType" id="fSync" value="FSync" checked>
@@ -90,7 +90,7 @@
         </fieldset>
         <div class="alert alert-warning alert-dismissible fade" role="alert" id="alert">
           <span id="errorMessage">Error message</span>
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <button type="button" class="close" id="closeErrorMessage" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -109,12 +109,24 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
     <script>
       var isAdmin;
+      var lastSyncTime = "<?= getCallLogSyncInfo().syncTime ?>";
+      var lastSyncLevel = "<?= getCallLogSyncInfo().syncLevel ?>";
+      function setSyncLevel(syncLevel) {
+        if (syncLevel === 'account') {
+          $('#syncLevel1').removeAttr('checked');
+          $('#syncLevel2').attr('checked', 'checked');
+        } else {
+          $('#syncLevel2').removeAttr('checked');
+          $('#syncLevel1').attr('checked', 'checked');
+        }
+      }
       function onSelectISync() {
         $('#dateFrom').attr('disabled', 'disabled');
         $('#syncLevel1Group').addClass('disabled');
         $('#syncLevel2Group').addClass('disabled');
         $('#syncLevel1').attr('disabled', 'disabled');
         $('#syncLevel2').attr('disabled', 'disabled');
+        setSyncLevel(lastSyncLevel);
       }
       function onSelectFSync() {
         $('#dateFrom').removeAttr('disabled');
@@ -123,6 +135,8 @@
         if (isAdmin) {
           $('#syncLevel2Group').removeClass('disabled');
           $('#syncLevel2').removeAttr('disabled');
+        } else {
+          setSyncLevel('extension');
         }
       }
       $('#syncTypeGroup').on('click', function() {
@@ -162,14 +176,17 @@
         $('#message').addClass('show');
       }
       function checkLastSyncInfo() {
-        const syncTime = "<?= getCallLogSyncInfo().syncTime ?>";
-        if (syncTime !== 'null' && syncTime !== 'undefined') {
-          showLastSyncInfo(syncTime);
+        if (lastSyncTime !== 'null' && lastSyncTime !== 'undefined') {
+          showLastSyncInfo(lastSyncTime);
           $('#fSync').removeAttr('checked');
           $('#iSync').attr('checked', 'checked');
           onSelectISync();
         } else {
           $('#iSync').attr('disabled', 'disabled');
+        }
+        if (lastSyncLevel === 'account') {
+          $('#syncLevel1').removeAttr('checked');
+          $('#syncLevel2').attr('checked', 'checked');
         }
       }
       checkLastSyncInfo();
@@ -199,6 +216,10 @@
         $('#alert').removeClass('fade');
         $('#alert').addClass('show');
       }
+      $('#closeErrorMessage').on('click', function () {
+        $('#alert').removeClass('show');
+        $('#alert').addClass('fade');
+      });
       form.addEventListener('submit', function(event) {
         event.preventDefault();
         $('#syncAction').attr('disabled', 'disabled');
