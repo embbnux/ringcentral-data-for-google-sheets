@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+      .radioGroup {
+        margin-left: 0;
+      }
+
+      .main {
+        margin-top: 30px;
+      }
+
+      .action {
+        margin-top: 50px;
+      }
+
+      .alert.fade {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container-fluid main">
+      <form id="callLogForm">
+        <fieldset class="form-group">
+          <div class="row">
+            <legend class="col-form-label col-3 pt-0">Fync Type</legend>
+            <div class="row col-9 radioGroup" id="syncTypeGroup">
+              <div class="form-check col-5">
+                <input class="form-check-input" type="radio" name="syncType" id="fSync" value="FSync" checked>
+                <label class="form-check-label" for="fSync">
+                  Full sync
+                </label>
+              </div>
+              <div class="form-check col-7">
+                <input class="form-check-input" type="radio" name="syncType" id="iSync" value="ISync">
+                <label class="form-check-label" for="iSync">
+                  Incremental sync
+                </label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+        <div class="form-group row">
+          <label for="dateFrom" class="col-3 col-form-label">Date From</label>
+          <div class="col-9">
+            <input type="date" class="form-control" id="dateFrom" name="dateFrom">
+          </div>
+        </div>
+        <fieldset class="form-group">
+          <div class="row">
+            <legend class="col-form-label col-3 pt-0">Level</legend>
+            <div class="col-9 row radioGroup">
+              <div class="form-check col-6" id="syncLevel1Group">
+                <input class="form-check-input" type="radio" name="syncLevel" id="syncLevel1" value="extension" checked>
+                <label class="form-check-label" for="syncLevel1">
+                  Extension Level
+                </label>
+              </div>
+              <div class="form-check col-6" id="syncLevel2Group">
+                <input class="form-check-input" type="radio" name="syncLevel" id="syncLevel2" value="account">
+                <label class="form-check-label" for="syncLevel2">
+                  Account Level
+                </label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="form-group">
+          <div class="row">
+            <legend class="col-form-label col-3 pt-0">Insert Into</legend>
+            <div class="col-9 row radioGroup">
+              <div class="form-check col-6" id="activeSheetGroup">
+                <input class="form-check-input" type="radio" name="sheet" id="activeSheet" value="active" checked>
+                <label class="form-check-label" for="activeSheet">
+                  Current Sheet
+                </label>
+              </div>
+              <div class="form-check col-6" id="newSheetGroup">
+                <input class="form-check-input" type="radio" name="sheet" id="newSheet" value="new">
+                <label class="form-check-label" for="newSheet">
+                  New Sheet
+                </label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+        <div class="alert alert-warning alert-dismissible fade" role="alert" id="alert">
+          <span id="errorMessage">Error message</span>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="alert alert-success alert-dismissible fade" role="alert" id="message">
+          <span id="syncInfo">Last synced at:</span>
+        </div>
+        <div class="form-group row action">
+          <div class="col-10">
+            <button class="btn btn-primary" id="syncAction" type="submit">Sync Call Log</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script>
+      var isAdmin;
+      function onSelectISync() {
+        $('#dateFrom').attr('disabled', 'disabled');
+        $('#syncLevel1Group').addClass('disabled');
+        $('#syncLevel2Group').addClass('disabled');
+        $('#syncLevel1').attr('disabled', 'disabled');
+        $('#syncLevel2').attr('disabled', 'disabled');
+      }
+      function onSelectFSync() {
+        $('#dateFrom').removeAttr('disabled');
+        $('#syncLevel1Group').removeClass('disabled');
+        $('#syncLevel1').removeAttr('disabled');
+        if (isAdmin) {
+          $('#syncLevel2Group').removeClass('disabled');
+          $('#syncLevel2').removeAttr('disabled');
+        }
+      }
+      $('#syncTypeGroup').on('click', function() {
+        var syncType = $("input[name='syncType']:checked").val();
+        if (syncType === 'ISync') {
+          onSelectISync();
+        } else {
+          onSelectFSync();
+        }
+      });
+      function initDateFrom() {
+        var date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+        var month = date.getMonth() + 1;
+        if (month < 10) {
+          month = '' + '0' + month;
+        }
+        var days = date.getDate();
+        if (days < 10) {
+          days = '' + '0' + days;
+        }
+        var dateString = '' + date.getFullYear() + '-' + month + '-' + days;
+        $('#dateFrom').val(dateString);
+      }
+      initDateFrom();
+      function checkRCAdmin(result) {
+        isAdmin = result;
+        if (!isAdmin) {
+          $('#syncLevel2Group').addClass('disabled');
+          $('#syncLevel2').attr('disabled', 'disabled');
+        }
+      }
+      function showLastSyncInfo(syncedAt) {
+        const date = new Date(syncedAt);
+        const message = 'Last synced at ' + date.toDateString();
+        $('#syncInfo').html(message);
+        $('#message').removeClass('fade');
+        $('#message').addClass('show');
+      }
+      function checkLastSyncInfo() {
+        const syncTime = "<?= getCallLogSyncInfo().syncTime ?>";
+        if (syncTime !== 'null' && syncTime !== 'undefined') {
+          showLastSyncInfo(syncTime);
+          $('#fSync').removeAttr('checked');
+          $('#iSync').attr('checked', 'checked');
+          onSelectISync();
+        } else {
+          $('#iSync').attr('disabled', 'disabled');
+        }
+      }
+      checkLastSyncInfo();
+      if (typeof google !== 'undefined') {
+        google.script.run
+          .withSuccessHandler(checkRCAdmin)
+          .isRingCentralAdmin();
+      }
+      function formatDateFrom(dateFrom) {
+        var date = new Date(dateFrom);
+        date.setHours(0);
+        return date.toISOString()
+      }
+      var form = document.getElementById('callLogForm');
+      function onSyncCallLogSuccess(syncInfo) {
+        $('#syncAction').removeAttr('disabled');
+        $('#syncAction').text('Sync Call Log');
+        if (syncInfo.syncTime) {
+          showLastSyncInfo(syncTime);
+          $('#iSync').removeAttr('disabled');
+        }
+      }
+      function onSyncCallLogFail(error) {
+        $('#syncAction').removeAttr('disabled');
+        $('#syncAction').text('Sync Call Log');
+        $('#errorMessage').html(error.message);
+        $('#alert').removeClass('fade');
+        $('#alert').addClass('show');
+      }
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        $('#syncAction').attr('disabled', 'disabled');
+        $('#syncAction').text('Syncing');
+        var formData = new FormData(form);
+        formData.set('dateFrom', formatDateFrom(formData.get('dateFrom')));
+        const formObject = {};
+        formData.forEach(function(value, key){
+          formObject[key] = value;
+        });
+        google.script.run
+          .withSuccessHandler(onSyncCallLogSuccess)
+          .withFailureHandler(onSyncCallLogFail)
+          .syncCallsIntoSheet(formObject);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+      .buttons {
+        margin-top: 50px;
+      }
+      <? if (checkRingCentralAuthorized()) { ?>
+        #login {
+          display: none;
+        }
+      <? } else  { ?>
+        #logout {
+          display: none;
+        }
+      <? } ?>
+    </style>
+  </head>
+  <body>
+    <div id="login">
+      <p>Please connect with RingCentral before accessing RingCentral data.</p>
+      <div class="buttons">
+        <button class="btn btn-primary" id="loginBtn">
+          Connect with RingCentral
+        </button>
+      </div>
+    </div>
+    <div id="logout">
+      <p>Connected with RingCentral.</p>
+      <div class="buttons">
+        <button class="btn btn-danger" id="logoutBtn">
+          Disconnect with RingCentral
+        </button>
+      </div>
+    </div>
+    <script>
+      var loginPanel = document.getElementById('login');
+      var logoutPanel = document.getElementById('logout');
+      function onAuthorizationCallback(authorized) {
+        if (authorized) {
+          loginPanel.style.display = 'none';
+          logoutPanel.style.display = 'block';
+          return;
+        }
+        setAuthorizationTimeout();
+      }
+      function onAuthorizationCallbackFail() {
+        onAuthorizationCallback(false);
+      }
+      function checkAuthorizationStatus() {
+        google.script.run
+          .withSuccessHandler(onAuthorizationCallback)
+          .withFailureHandler(onAuthorizationCallbackFail)
+          .checkRingCentralAuthorized();
+      }
+      var timeout = null;
+      function setAuthorizationTimeout() {
+        if (timeout !== null) {
+          clearTimeout(timeout);
+        }
+        timeout = setTimeout(function () {
+          checkAuthorizationStatus();
+        }, 3000);
+      }
+      var loginBtn = document.getElementById('loginBtn');
+      var logoutBtn = document.getElementById('logoutBtn');
+      loginBtn.addEventListener('click', function() {
+        window.open("<?= getRingCentralService().getAuthorizationUrl() ?>");
+        setAuthorizationTimeout();
+      });
+      logoutBtn.addEventListener('click', function() {
+        google.script.run.logoutRingCentral();
+        loginPanel.style.display = 'block';
+        logoutPanel.style.display = 'none';
+      });
+    </script>
+  </body>
+</html>

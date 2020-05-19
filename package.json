@@ -1,0 +1,14 @@
+{
+  "name": "ringcentral-data-for-google-sheet",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "loginToAppScript": "clasp login",
+    "watch": "clasp push --watch"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.3.0",
+    "@types/google-apps-script": "^1.0.14"
+  }
+}
