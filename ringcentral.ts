@@ -101,7 +101,7 @@ const CALL_LOG_PATH = {
     list: '/restapi/v1.0/account/~/extension/~/call-log'
   }
 };
-const CALL_LOG_MAX_RECORD_COUNT = 2;
+const CALL_LOG_MAX_RECORD_COUNT = 250;
 
 function fetchCallLogList(params: { dateTo: string; dateFrom: string; syncLevel: string }) {
   const path = CALL_LOG_PATH[params.syncLevel || 'extension'].list;
