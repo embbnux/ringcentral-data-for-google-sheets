@@ -109,6 +109,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
     <script>
       var isAdmin;
+      var formObject = {};
       var lastSyncTime = "<?= getCallLogSyncInfo().syncTime ?>";
       var lastSyncLevel = "<?= getCallLogSyncInfo().syncLevel ?>";
       function setSyncLevel(syncLevel) {
@@ -121,12 +122,12 @@
         }
       }
       function onSelectISync() {
+        setSyncLevel(lastSyncLevel);
         $('#dateFrom').attr('disabled', 'disabled');
         $('#syncLevel1Group').addClass('disabled');
         $('#syncLevel2Group').addClass('disabled');
-        $('#syncLevel1').attr('disabled', 'disabled');
-        $('#syncLevel2').attr('disabled', 'disabled');
-        setSyncLevel(lastSyncLevel);
+        $('#syncLevel1:not(:checked)').attr('disabled', 'disabled');
+        $('#syncLevel2:not(:checked)').attr('disabled', 'disabled');
       }
       function onSelectFSync() {
         $('#dateFrom').removeAttr('disabled');
@@ -205,7 +206,9 @@
         $('#syncAction').removeAttr('disabled');
         $('#syncAction').text('Sync Call Log');
         if (syncInfo.syncTime) {
-          showLastSyncInfo(syncTime);
+          lastSyncLevel = formObject.syncLevel;
+          lastSyncTime = syncInfo.syncTime;
+          showLastSyncInfo(lastSyncTime);
           $('#iSync').removeAttr('disabled');
         }
       }
@@ -226,7 +229,7 @@
         $('#syncAction').text('Syncing');
         var formData = new FormData(form);
         formData.set('dateFrom', formatDateFrom(formData.get('dateFrom')));
-        const formObject = {};
+        formObject = {};
         formData.forEach(function(value, key){
           formObject[key] = value;
         });

@@ -69,20 +69,20 @@ function makeRequest(options) {
   if (code >= 200 && code < 300) {
     return json;
   } else if (code == 401 || code == 403) {
-    console.log(
-      'error',
-      'will logout due to get code ',
-      code,
-      ' when request ',
-      path,
-      ' with ',
+    Logger.log(
+      'error' +
+      'will logout due to get code ' +
+      code +
+      ' when request ' +
+      path +
+      ' with ' +
       body
     );
     service.reset();
-    throw 'Token expired';
+    throw new Error('RingCentral Authorization expired');
   } else {
-    console.log('error', 'RingCentral Server Error', path, json);
-    throw 'RingCentral Server Error: ' + (json.message || json.error_description);
+    Logger.log('error' + 'RingCentral Server Error', path, json);
+    throw new Error('RingCentral Server Error: ' + (json.message || json.error_description));
   }
 }
 
@@ -91,27 +91,96 @@ function getExtensionInfo() {
    return response;
 }
 
-function syncCallLog(options) {
-  let path = '/restapi/v1.0/account/~';
-  if (options.syncLevel === 'extension') {
-    path = path + '/extension/~';
+const CALL_LOG_PATH = {
+  account: {
+    sync: '/restapi/v1.0/account/~/call-log-sync',
+    list: '/restapi/v1.0/account/~/call-log'
+  },
+  extension: {
+    sync: '/restapi/v1.0/account/~/extension/~/call-log-sync',
+    list: '/restapi/v1.0/account/~/extension/~/call-log'
   }
-  path = path + '/call-log-sync';
+};
+const CALL_LOG_MAX_RECORD_COUNT = 2;
+
+function fetchCallLogList(params: { dateTo: string; dateFrom: string; syncLevel: string }) {
+  const path = CALL_LOG_PATH[params.syncLevel || 'extension'].list;
+  let fetchedPages = 0;
+  let totalPages = 1;
+  let records = [];
+  while (fetchedPages < totalPages) {
+    fetchedPages += 1;
+    const response = makeRequest({
+      path,
+      query: {
+        perPage: 'MAX',
+        dateTo: params.dateTo,
+        dateFrom: params.dateFrom,
+        page: fetchedPages,
+      }
+    });
+    totalPages = response.paging.totalPages;
+    records = records.concat(response.records);
+  }
+  return records;
+}
+
+function fullSyncCallLog(params: { dateFrom: string; syncLevel?: 'account' | 'extension' }) {
+  const path = CALL_LOG_PATH[params.syncLevel || 'extension'].sync;
   const query = {
-    syncType: options.syncType,
-  } as {
-    dateFrom?: string;
-    syncType: string;
-    recordCount?: Number;
-    syncToken?: string;
+    syncType: 'FSync',
+    recordCount: CALL_LOG_MAX_RECORD_COUNT,
+    dateFrom: params.dateFrom,
   };
-  if (query.syncType === 'ISync') {
-    query.syncToken = getCallLogSyncInfo().syncToken;
-  } else {
-    query.dateFrom = options.dateFrom;
-    query.recordCount = 200;
-  }
   const response = makeRequest({ path, query });
+  let records = response.records;
+  if (records.length >= CALL_LOG_MAX_RECORD_COUNT) {
+    const dateTo = records[records.length - 1].startTime;
+    if (dateTo !== params.dateFrom) {
+      const olderRecords = fetchCallLogList({ dateFrom: params.dateFrom, dateTo, syncLevel: params.syncLevel });
+      if (olderRecords[0] && olderRecords[0].id === records[records.length - 1].id) {
+        olderRecords.shift();
+      }
+      records = records.concat(olderRecords);
+    }
+  }
+  return { records, syncInfo: response.syncInfo };
+}
+
+function iSyncCallLog(params: { syncLevel?: 'account' | 'extension' }) {
+  const path = CALL_LOG_PATH[params.syncLevel || 'extension'].sync;
+  const lastSyncInfo = getCallLogSyncInfo();
+  console.log(lastSyncInfo);
+  if (!lastSyncInfo.syncToken || !lastSyncInfo.syncTime) {
+    throw new Error('Last Sync Info in current spreadsheet is empty, please use Full Sync.');
+  }
+  const query = {
+    syncType: 'ISync',
+    syncToken: lastSyncInfo.syncToken,
+  };
+  let response;
+  try {
+    response = makeRequest({ path, query });
+  } catch (e) {
+    if (e.message.indexOf('Parameter [syncToken] is invalid') > -1) {
+      response = fullSyncCallLog({ syncLevel: params.syncLevel, dateFrom: lastSyncInfo.syncTime });
+    } else {
+      throw e;
+    }
+  }
+  return response;
+}
+
+function syncCallLog(options: { dateFrom: string; syncLevel: 'account' | 'extension'; syncType: string }) {
+  let response;
+  if (options.syncType === 'ISync') {
+    response = iSyncCallLog({ syncLevel: options.syncLevel });
+  } else {
+    response = fullSyncCallLog({
+      dateFrom: options.dateFrom,
+      syncLevel: options.syncLevel,
+    });
+  }
   const documentProperties = PropertiesService.getDocumentProperties();
   documentProperties.setProperty('CALL_LOG_SYNC_INFO', JSON.stringify(response.syncInfo));
   documentProperties.setProperty('CALL_LOG_SYNC_LEVEL', options.syncLevel);
@@ -124,7 +193,12 @@ function getCallLogSyncInfo() {
   const syncInfo = (data && JSON.parse(data)) || {};
   const syncLevel = documentProperties.getProperty('CALL_LOG_SYNC_LEVEL') || 'extension';
   syncInfo.syncLevel = syncLevel;
-  return syncInfo
+  return syncInfo as {
+    syncLevel: 'account' | 'extension';
+    syncType: 'FSync' | 'ISync';
+    syncToken: string;
+    syncTime: string;
+  }
 }
 
 function isRingCentralAdmin() {
