@@ -35,7 +35,7 @@ function authCallback(callbackRequest) {
       return HtmlService.createHtmlOutput('Denied');
     }
   } catch (err) {
-    console.log('===>ERROR: auth callback', err);
+    Logger.log('===>ERROR: auth callback', err);
     return HtmlService.createHtmlOutput('Denied');
   }
 }
@@ -150,7 +150,6 @@ function fullSyncCallLog(params: { dateFrom: string; syncLevel?: 'account' | 'ex
 function iSyncCallLog(params: { syncLevel?: 'account' | 'extension' }) {
   const path = CALL_LOG_PATH[params.syncLevel || 'extension'].sync;
   const lastSyncInfo = getCallLogSyncInfo();
-  console.log(lastSyncInfo);
   if (!lastSyncInfo.syncToken || !lastSyncInfo.syncTime) {
     throw new Error('Last Sync Info in current spreadsheet is empty, please use Full Sync.');
   }

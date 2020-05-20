@@ -2,9 +2,9 @@
 
 A [Google Apps Script](https://script.google.com/) app to integrate RingCentral data into Google spreadsheets, such as syncing RingCentral call log into a spreadsheet.
 
-![Addon Menu](https://user-images.githubusercontent.com/7036536/82354777-dc677a00-9a33-11ea-8d09-69d7c0db4e92.png)
+[![YouTube demo](https://user-images.githubusercontent.com/7036536/82449001-1e98c600-9add-11ea-8158-d114ae14ed8c.png)](https://www.youtube.com/watch?v=KFZYqYbCfWc)
 
-![Sync Call Log](https://user-images.githubusercontent.com/7036536/82355101-5b5cb280-9a34-11ea-8253-25a119b87e33.png)
+![Addon Menu](https://user-images.githubusercontent.com/7036536/82354777-dc677a00-9a33-11ea-8d09-69d7c0db4e92.png)
 
 ![Sheet data](https://user-images.githubusercontent.com/7036536/82349700-05384100-9a2d-11ea-896a-a1c739b9e12d.png)
 
