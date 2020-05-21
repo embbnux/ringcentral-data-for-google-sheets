@@ -61,3 +61,5 @@ Test in [Google Apps Script](https://script.google.com/) website to run it as ad
 
 - [ ] Sync SMS, Voicemail and Fax data
 - [ ] Sync RingCentral Video/Meetings data
+- [ ] Upgrade RingCentral app into production
+- [ ] Publish into add-on marketplace
