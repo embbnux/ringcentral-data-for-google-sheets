@@ -55,6 +55,12 @@ $ ./node_modules/.bin/clasp create
 yarn watch
 ```
 
+**Notice**: Before we test, we need to following redirect URI into your RingCentral app in RingCentral Developer website:
+
+```
+https://script.google.com/macros/d/{SCRIPT ID}/usercallback
+```
+
 Test in [Google Apps Script](https://script.google.com/) website to run it as add-on.
 
 ## TODO
