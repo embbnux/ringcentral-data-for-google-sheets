@@ -16,7 +16,7 @@ We build this project based on Google Apps Script Tool [clasp](https://developer
 
 ### Init project
 
-Create a free RingCentral app in [RingCentral Developers website](http://developers.ringcentral.com/) to get app client id and secret.
+Create a free RingCentral app in [RingCentral Developers website](http://developers.ringcentral.com/) to get app client id and secret. Add permission `ReadAccount` and `ReadCallLog` into your RingCentral app.
 
 Clone this project and install dependences
 
