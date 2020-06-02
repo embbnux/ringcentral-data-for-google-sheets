@@ -117,6 +117,7 @@ function fetchCallLogList(params: { dateTo: string; dateFrom: string; syncLevel:
         dateTo: params.dateTo,
         dateFrom: params.dateFrom,
         page: fetchedPages,
+        view: 'Detailed',
       }
     });
     totalPages = response.paging.totalPages;
@@ -131,6 +132,7 @@ function fullSyncCallLog(params: { dateFrom: string; syncLevel?: 'account' | 'ex
     syncType: 'FSync',
     recordCount: CALL_LOG_MAX_RECORD_COUNT,
     dateFrom: params.dateFrom,
+    view: 'Detailed',
   };
   const response = makeRequest({ path, query });
   let records = response.records;
@@ -156,6 +158,7 @@ function iSyncCallLog(params: { syncLevel?: 'account' | 'extension' }) {
   const query = {
     syncType: 'ISync',
     syncToken: lastSyncInfo.syncToken,
+    view: 'Detailed',
   };
   let response;
   try {
