@@ -173,15 +173,24 @@ function iSyncCallLog(params: { syncLevel?: 'account' | 'extension' }) {
   return response;
 }
 
-function syncCallLog(options: { dateFrom: string; syncLevel: 'account' | 'extension'; syncType: string }) {
+function syncCallLog(options: { dateFrom: string; dateTo: string; syncLevel: 'account' | 'extension'; syncType: string }) {
   let response;
   if (options.syncType === 'ISync') {
     response = iSyncCallLog({ syncLevel: options.syncLevel });
   } else {
-    response = fullSyncCallLog({
-      dateFrom: options.dateFrom,
-      syncLevel: options.syncLevel,
-    });
+    if (options.dateTo === 'latest') {
+      response = fullSyncCallLog({
+        dateFrom: options.dateFrom,
+        syncLevel: options.syncLevel,
+      });
+    } else {
+      const records = fetchCallLogList({
+        dateFrom: options.dateFrom,
+        dateTo: options.dateTo,
+        syncLevel: options.syncLevel
+      });
+      response = { records, syncInfo: {} };
+    }
   }
   const documentProperties = PropertiesService.getDocumentProperties();
   documentProperties.setProperty('CALL_LOG_SYNC_INFO', JSON.stringify(response.syncInfo));

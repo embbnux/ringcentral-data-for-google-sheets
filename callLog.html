@@ -50,6 +50,12 @@
             <input type="date" class="form-control" id="dateFrom" name="dateFrom">
           </div>
         </div>
+        <div class="form-group row">
+          <label for="dateTo" class="col-3 col-form-label">Date To</label>
+          <div class="col-9">
+            <input type="date" class="form-control" id="dateTo" name="dateTo">
+          </div>
+        </div>
         <fieldset class="form-group">
           <div class="row">
             <legend class="col-form-label col-3 pt-0">Level</legend>
@@ -124,6 +130,7 @@
       function onSelectISync() {
         setSyncLevel(lastSyncLevel);
         $('#dateFrom').attr('disabled', 'disabled');
+        $('#dateTo').attr('disabled', 'disabled');
         $('#syncLevel1Group').addClass('disabled');
         $('#syncLevel2Group').addClass('disabled');
         $('#syncLevel1:not(:checked)').attr('disabled', 'disabled');
@@ -131,6 +138,7 @@
       }
       function onSelectFSync() {
         $('#dateFrom').removeAttr('disabled');
+        $('#dateTo').removeAttr('disabled');
         $('#syncLevel1Group').removeClass('disabled');
         $('#syncLevel1').removeAttr('disabled');
         if (isAdmin) {
@@ -148,8 +156,7 @@
           onSelectFSync();
         }
       });
-      function initDateFrom() {
-        var date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+      function getDateString(date) {
         var month = date.getMonth() + 1;
         if (month < 10) {
           month = '' + '0' + month;
@@ -159,9 +166,20 @@
           days = '' + '0' + days;
         }
         var dateString = '' + date.getFullYear() + '-' + month + '-' + days;
+        return dateString;
+      }
+      function initDateFrom() {
+        var date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+        var dateString = getDateString(date);
         $('#dateFrom').val(dateString);
       }
       initDateFrom();
+      function initDateTo() {
+        var date = new Date(); // 7 days ago
+        var dateString = getDateString(date);
+        $('#dateTo').val(dateString);
+      }
+      initDateTo()
       function checkRCAdmin(result) {
         isAdmin = result;
         if (!isAdmin) {
@@ -177,7 +195,7 @@
         $('#message').addClass('show');
       }
       function checkLastSyncInfo() {
-        if (lastSyncTime !== 'null' && lastSyncTime !== 'undefined') {
+        if (lastSyncTime !== 'null' && lastSyncTime !== 'undefined' && lastSyncTime !== '') {
           showLastSyncInfo(lastSyncTime);
           $('#fSync').removeAttr('checked');
           $('#iSync').attr('checked', 'checked');
@@ -200,6 +218,14 @@
         var date = new Date(dateFrom);
         date.setHours(0);
         return date.toISOString()
+      }
+      function formatDateTo(dateTo) {
+        var date = new Date(dateTo);
+        date.setHours(23,59,59,999);
+        if (date.getTime() > Date.now()) {
+          return 'latest';
+        }
+        return date.toISOString();
       }
       var form = document.getElementById('callLogForm');
       function onSyncCallLogSuccess(syncInfo) {
@@ -229,6 +255,7 @@
         $('#syncAction').text('Syncing');
         var formData = new FormData(form);
         formData.set('dateFrom', formatDateFrom(formData.get('dateFrom')));
+        formData.set('dateTo', formatDateTo(formData.get('dateTo')));
         formObject = {};
         formData.forEach(function(value, key){
           formObject[key] = value;
