@@ -69,3 +69,4 @@ Test in [Google Apps Script](https://script.google.com/) website to run it as ad
 - [ ] Sync RingCentral Video/Meetings data
 - [ ] Upgrade RingCentral app into production
 - [ ] Publish into add-on marketplace
+- [ ] Support to select call log fields for injecting
