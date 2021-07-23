@@ -42,14 +42,31 @@ const RC_APP = {
 };
 ```
 
-### Init Goolge Apps Script
+### Init Google Apps Script
 
 ```
 $ ./node_modules/.bin/clasp login # Login with your Google Apps Script account
+```
+
+#### If you are using legacy Google Script editor, you can create Google Script by clasp:
+
+```
 $ ./node_modules/.bin/clasp create
 ```
 
-### Compile and upload to Goolge Apps Script
+#### If you are using new Google Script editor, you need to create a bound script
+
+Create script project by open a google sheet, and create Google Script project by "Tool -> Script Editor" https://developers.google.com/apps-script/guides/bound
+
+You will be redirect to script editor with URI: `https://script.google.com/home/projects/your_google_script_project_id/edit`
+
+Copy Google Script project id in the URI. Then create '.clasp.json' file in this project root path at your computer.
+
+```
+{"scriptId":"your_google_script_project_id"}
+```
+
+### Compile and upload to Google Apps Script
 
 ```
 yarn watch
@@ -61,7 +78,21 @@ yarn watch
 https://script.google.com/macros/d/{SCRIPT ID}/usercallback
 ```
 
-Test in [Google Apps Script](https://script.google.com/) website to run it as add-on.
+### Try it
+
+For legacy editor:
+  1. Go to [Google Apps Script](https://script.google.com/)
+  2. Open your project with legacy editor
+  3. In menu, "Run -> Test as add-on -> Select a sheet file"
+  4. Click `Test` to open the sheet file
+  5. You can get "RingCentral Data for Google Sheet" at `Add-ons` menu
+
+For new script editor:
+  1. Go to [Google Apps Script](https://script.google.com/)
+  2. open your project with new editor
+  3. In menu, "Deploy -> Test deployments -> Install"
+  4. Got to your bind script, refresh the page
+  5. You will get a `RingCentral` in top menu
 
 ## TODO
 
