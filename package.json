@@ -8,7 +8,7 @@
     "watch": "clasp push --watch"
   },
   "devDependencies": {
-    "@google/clasp": "^2.3.0",
-    "@types/google-apps-script": "^1.0.14"
+    "@google/clasp": "^2.4.0",
+    "@types/google-apps-script": "^1.0.37"
   }
 }

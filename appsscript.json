@@ -8,5 +8,21 @@
     }]
   },
   "exceptionLogging": "STACKDRIVER",
-  "runtimeVersion": "V8"
+  "runtimeVersion": "V8",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/script.container.ui",
+    "https://www.googleapis.com/auth/script.external_request"
+  ],
+  "addOns": {
+    "common": {
+      "name": "RingCentral Data for Google Sheet",
+      "logoUrl": "https://raw.githubusercontent.com/ringcentral/ringcentral-embeddable/2ea6bff6a5c4b0a3aad7e3f07c52cba2d74746c0/getBrandConfig/rc/icon.svg"
+    },
+    "docs" : {},
+    "slides" : {},
+    "sheets" : {
+
+    }
+  }
 }
